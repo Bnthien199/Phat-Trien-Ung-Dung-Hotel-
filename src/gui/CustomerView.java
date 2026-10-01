@@ -1,300 +1,501 @@
 package gui;
 
+import entity.KhachHang;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import java.util.List;
-import java.util.stream.Collectors;
+import javafx.stage.Window;
+import util.AppTheme;
+import util.ReportExportUtils;
+import util.ReportExportUtils.SaveTarget;
 
-import dao.KhachHangDAO;
-import entity.KhachHang;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CustomerView {
+    private static final Logger LOGGER = Logger.getLogger(CustomerView.class.getName());
 
-    private final String BG_LIGHT = "#f6f6f8";
-    private final String PRIMARY_COLOR = "#2c0fbd";
+    // ── palette (đồng bộ AppTheme) ──────────────────────────────────
+    private static final String C_BG = AppTheme.BG_LIGHT; // #f4f7fb
+    private static final String C_SURFACE = AppTheme.SURFACE; // #ffffff
+    private static final String C_PRIMARY = AppTheme.PRIMARY;
+    private static final String C_ACCENT = AppTheme.TEAL_DARK;
+    private static final String C_SUCCESS = AppTheme.SUCCESS; // #0f766e
+    private static final String C_BORDER = AppTheme.BORDER; // #d7deea
+    private static final String C_TEXT = AppTheme.TEXT; // #233044
+    private static final String C_MUTED = AppTheme.MUTED; // #64748b
 
-    private TableView<KhachHang> tableView;
-    private List<KhachHang> allData;
+    private static final String TABLE_CSS = buildTableCss();
+
+    // ── state ────────────────────────────────────────────────────────
+    private final KhachHangService service = new KhachHangService();
+    private final TableView<KhachHang> tableView = new TableView<>();
+    private List<KhachHang> allData = new ArrayList<>();
     private TextField txtSearch;
+    private ComboBox<String> cboSearchType;
+    private ComboBox<String> cboTrangThai;
+    private Label lblCount;
+    private Consumer<KhachHang> onBookingRequest;
+    private KhachHang selectedCustomer;
 
-    // Form fields
-    private TextField txtMa, txtTen, txtDiaChi, txtSdt;
-    private ComboBox<String> cbGioiTinh;
-    private final KhachHangDAO dao = new KhachHangDAO();
+    // ═════════════════════════════════════════════════════════════════
+    // PUBLIC API
+    // ═════════════════════════════════════════════════════════════════
 
     public Node createView() {
-        HBox root = new HBox(25);
-        root.setPadding(new Insets(30));
-        root.setStyle("-fx-background-color: " + BG_LIGHT + ";");
+        VBox root = new VBox(0);
+        root.setStyle("-fx-background-color: " + C_BG + ";");
 
-        // --- CỘT TRÁI: Bảng danh sách ---
-        VBox leftCol = new VBox(15);
-        HBox.setHgrow(leftCol, Priority.ALWAYS);
-
-        Label lblTitle = new Label("QUẢN LÝ KHÁCH HÀNG");
-        lblTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 26));
-        lblTitle.setTextFill(Color.web("#2c3e50"));
-
-        txtSearch = new TextField();
-        txtSearch.setPromptText("Tìm theo tên hoặc số điện thoại...");
-        txtSearch.setPrefHeight(42);
-        txtSearch.setStyle("-fx-background-radius: 8; -fx-border-color: #ddd; -fx-border-radius: 8; -fx-padding: 0 12 0 12;");
-        txtSearch.textProperty().addListener((o, v, n) -> filterData());
-
-        tableView = new TableView<>();
-        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableView.setStyle("-fx-background-radius: 8;");
-        tableView.setRowFactory(tv -> {
-            TableRow<KhachHang> row = new TableRow<>();
-            row.setPrefHeight(40);
-            return row;
-        });
-        VBox.setVgrow(tableView, Priority.ALWAYS);
-
-        TableColumn<KhachHang, String> colMa = new TableColumn<>("Mã KH");
-        colMa.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getMaKhachHang()));
-        colMa.setPrefWidth(80);
-
-        TableColumn<KhachHang, String> colTen = new TableColumn<>("Tên Khách Hàng");
-        colTen.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTenKhachHang()));
-
-        TableColumn<KhachHang, String> colGioiTinh = new TableColumn<>("Giới Tính");
-        colGioiTinh.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().isGioiTinh() ? "Nam" : "Nữ"));
-        colGioiTinh.setPrefWidth(80);
-
-        TableColumn<KhachHang, String> colDiaChi = new TableColumn<>("Địa Chỉ");
-        colDiaChi.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDiaChi()));
-
-        TableColumn<KhachHang, String> colSdt = new TableColumn<>("Số ĐT");
-        colSdt.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getSoDienThoai()));
-        colSdt.setPrefWidth(115);
-
-        tableView.getColumns().addAll(colMa, colTen, colGioiTinh, colDiaChi, colSdt);
-        tableView.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) -> fillForm(newVal));
-
-        leftCol.getChildren().addAll(lblTitle, txtSearch, tableView);
-
-        // --- CỘT PHẢI: Form nhập liệu ---
-        VBox rightCol = new VBox(16);
-        rightCol.setPrefWidth(290);
-        rightCol.setMinWidth(290);
-        rightCol.setPadding(new Insets(25));
-        rightCol.setStyle("-fx-background-color: white; -fx-background-radius: 14; " +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 14, 0, 0, 5);");
-
-        Label lblForm = new Label("THÔNG TIN KHÁCH HÀNG");
-        lblForm.setFont(Font.font("Segoe UI", FontWeight.BOLD, 15));
-        lblForm.setTextFill(Color.web(PRIMARY_COLOR));
-
-        txtMa = createField("VD: KH001");
-        txtTen = createField("Họ và tên đầy đủ");
-        txtDiaChi = createField("Địa chỉ thường trú");
-        txtSdt = createField("0xxxxxxxxx");
-
-        cbGioiTinh = new ComboBox<>();
-        cbGioiTinh.getItems().addAll("Nam", "Nữ");
-        cbGioiTinh.setValue("Nam");
-        cbGioiTinh.setMaxWidth(Double.MAX_VALUE);
-        cbGioiTinh.setPrefHeight(40);
-
-        VBox formFields = new VBox(12);
-        formFields.getChildren().addAll(
-                formRow("Mã KH:", txtMa),
-                formRow("Họ tên:", txtTen),
-                formRow("Địa chỉ:", txtDiaChi),
-                formRow("Số ĐT:", txtSdt),
-                formRow("Giới tính:", cbGioiTinh)
-        );
-
-        Button btnThem = createBtn("  THÊM MỚI", "#27ae60");
-        Button btnCapNhat = createBtn("  CẬP NHẬT", "#2980b9");
-        Button btnXoa = createBtn("  XÓA", "#e74c3c");
-        Button btnReset = createBtn("  LÀM MỚI FORM", "#95a5a6");
-
-        btnThem.setOnAction(e -> handleThem());
-        btnCapNhat.setOnAction(e -> handleCapNhat());
-        btnXoa.setOnAction(e -> handleXoa());
-        btnReset.setOnAction(e -> clearForm());
-
-        rightCol.getChildren().addAll(
-                lblForm,
-                new Separator(),
-                formFields,
-                new Separator(),
-                btnThem, btnCapNhat, btnXoa, btnReset
-        );
-
-        root.getChildren().addAll(leftCol, rightCol);
+        root.getChildren().addAll(buildPageHeader(), buildToolbar(), buildTableCard());
         loadData();
         return root;
     }
 
-    private TextField createField(String prompt) {
-        TextField tf = new TextField();
-        tf.setPromptText(prompt);
-        tf.setPrefHeight(40);
-        tf.setStyle("-fx-background-radius: 6; -fx-border-color: #e0e0e0; -fx-border-radius: 6; -fx-padding: 0 10 0 10;");
-        return tf;
-    }
-
-    private VBox formRow(String label, Control field) {
-        VBox vb = new VBox(4);
-        Label lbl = new Label(label);
-        lbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
-        lbl.setTextFill(Color.web("#7f8c8d"));
-        vb.getChildren().addAll(lbl, field);
-        return vb;
-    }
-
-    private Button createBtn(String text, String color) {
-        Button btn = new Button(text);
-        btn.setMaxWidth(Double.MAX_VALUE);
-        btn.setPrefHeight(42);
-        btn.setFont(Font.font("Segoe UI", FontWeight.BOLD, 13));
-        btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
-        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: derive(" + color + ", -10%); -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;"));
-        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;"));
-        return btn;
+    public void setOnBookingRequest(Consumer<KhachHang> callback) {
+        this.onBookingRequest = callback;
     }
 
     public void loadData() {
         Task<List<KhachHang>> task = new Task<>() {
             @Override
             protected List<KhachHang> call() {
-                return dao.getAllKhachHang();
+                return service.getAll();
             }
         };
         task.setOnSucceeded(e -> {
-            allData = task.getValue();
+            allData = task.getValue() != null ? task.getValue() : new ArrayList<>();
             filterData();
+            if (lblCount != null) {
+                lblCount.setText(allData.size() + " khách hàng");
+            }
         });
         new Thread(task).start();
     }
 
-    private void filterData() {
-        if (allData == null) return;
-        String q = txtSearch.getText().toLowerCase().trim();
-        tableView.getItems().setAll(
-                allData.stream()
-                        .filter(k -> q.isEmpty()
-                                || k.getTenKhachHang().toLowerCase().contains(q)
-                                || (k.getSoDienThoai() != null && k.getSoDienThoai().contains(q)))
-                        .collect(Collectors.toList())
-        );
-    }
+    // ═════════════════════════════════════════════════════════════════
+    // HEADER — title + subtitle + count badge
+    // ═════════════════════════════════════════════════════════════════
 
-    private void fillForm(KhachHang kh) {
-        if (kh == null) return;
-        txtMa.setText(kh.getMaKhachHang());
-        txtMa.setEditable(false);
-        txtMa.setStyle(txtMa.getStyle() + " -fx-background-color: #f8f8f8;");
-        txtTen.setText(kh.getTenKhachHang());
-        txtDiaChi.setText(kh.getDiaChi() != null ? kh.getDiaChi() : "");
-        txtSdt.setText(kh.getSoDienThoai() != null ? kh.getSoDienThoai() : "");
-        cbGioiTinh.setValue(kh.isGioiTinh() ? "Nam" : "Nữ");
-    }
+    private HBox buildPageHeader() {
+        // avatar icon
+        Circle avatar = new Circle(22);
+        avatar.setFill(Color.web(AppTheme.TEAL_LIGHT));
 
-    private void handleThem() {
-        try {
-            String ma = txtMa.getText().trim();
-            String ten = txtTen.getText().trim();
-            String dc = txtDiaChi.getText().trim();
-            String sdt = txtSdt.getText().trim();
-            if (ma.isEmpty() || ten.isEmpty()) {
-                showAlert("Thiếu thông tin", "Vui lòng nhập đầy đủ Mã KH và Tên.");
+        Label icon = new Label("👤");
+        icon.setFont(Font.font(18));
+        icon.setTextFill(Color.web(C_PRIMARY));
+        StackPane iconWrap = new StackPane(avatar, icon);
+        iconWrap.setPrefSize(44, 44);
+
+        // titles
+        Label lblTitle = new Label("Quản lý khách hàng");
+        lblTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
+        lblTitle.setTextFill(Color.web(C_TEXT));
+
+        Label lblSub = new Label("Xem, thêm, tìm kiếm và cập nhật thông tin khách hàng");
+        lblSub.setFont(Font.font("Segoe UI", 13));
+        lblSub.setTextFill(Color.web(C_MUTED));
+
+        VBox titleBox = new VBox(2, lblTitle, lblSub);
+
+        // count badge
+        lblCount = new Label("— khách hàng");
+        lblCount.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
+        lblCount.setTextFill(Color.web(C_ACCENT));
+        lblCount.setStyle(
+                "-fx-background-color: #eff6ff;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-padding: 4 14;");
+
+        // action buttons
+        Button btnDatPhong = buildFilledBtn("🛏  Đặt Phòng", AppTheme.TEAL);
+        btnDatPhong.setOnAction(e -> {
+            if (selectedCustomer == null) {
+                new Alert(Alert.AlertType.WARNING, "Vui lòng chọn khách hàng.").showAndWait();
                 return;
             }
-            KhachHang kh = new KhachHang();
-            kh.setMaKhachHang(ma);
-            kh.setTenKhachHang(ten);
-            kh.setDiaChi(dc.isEmpty() ? " " : dc);
-            kh.setSoDienThoai(sdt);
-            kh.setGioiTinh("Nam".equals(cbGioiTinh.getValue()));
-            boolean ok = dao.create(kh);
-            if (ok) {
-                showAlert("Thành công", "Đã thêm khách hàng mới: " + ten);
-                loadData();
-                clearForm();
-            } else {
-                showAlert("Lỗi", "Không thể thêm. Mã KH có thể đã tồn tại.");
+            if (!selectedCustomer.isDangHoatDong()) {
+                new Alert(Alert.AlertType.WARNING, "Khách hàng đã bị vô hiệu hóa").showAndWait();
+                return;
             }
-        } catch (IllegalArgumentException e) {
-            showAlert("Dữ liệu không hợp lệ", e.getMessage());
-        }
+            if (onBookingRequest != null) {
+                onBookingRequest.accept(selectedCustomer);
+            }
+        });
+
+        Button btnThem = buildFilledBtn("＋  Thêm mới", AppTheme.TEAL);
+        btnThem.setOnAction(e -> openCustomerDialog(null));
+
+        Button btnExport = buildFilledBtn("Xuất báo cáo", AppTheme.PRIMARY);
+        btnExport.setOnAction(e -> handleExportReport());
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(14);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(28, 28, 16, 28));
+        header.getChildren().addAll(iconWrap, titleBox, spacer, lblCount, btnExport, btnDatPhong, btnThem);
+        return header;
     }
 
-    private void handleCapNhat() {
-        KhachHang selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Thông báo", "Vui lòng chọn dòng cần cập nhật!");
-            return;
-        }
-        try {
-            selected.setTenKhachHang(txtTen.getText().trim());
-            selected.setDiaChi(txtDiaChi.getText().trim());
-            selected.setSoDienThoai(txtSdt.getText().trim());
-            selected.setGioiTinh("Nam".equals(cbGioiTinh.getValue()));
-            boolean ok = dao.update(selected);
-            if (ok) {
-                showAlert("Thành công", "Đã cập nhật thông tin khách hàng!");
-                loadData();
-            } else {
-                showAlert("Lỗi", "Cập nhật thất bại.");
-            }
-        } catch (IllegalArgumentException e) {
-            showAlert("Dữ liệu không hợp lệ", e.getMessage());
-        }
+    // ═════════════════════════════════════════════════════════════════
+    // TOOLBAR — search + filter
+    // ═════════════════════════════════════════════════════════════════
+
+    private HBox buildToolbar() {
+        // search icon label
+        Label searchIcon = new Label("🔍");
+        searchIcon.setFont(Font.font(14));
+        searchIcon.setPadding(new Insets(0, 0, 0, 12));
+
+        txtSearch = new TextField();
+        txtSearch.setPromptText("Tìm kiếm khách hàng...");
+        txtSearch.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-padding: 0;" +
+                        "-fx-font-size: 13;");
+        txtSearch.textProperty().addListener((obs, o, n) -> filterData());
+        HBox.setHgrow(txtSearch, Priority.ALWAYS);
+
+        HBox searchWrap = new HBox(6, searchIcon, txtSearch);
+        searchWrap.setAlignment(Pos.CENTER_LEFT);
+        searchWrap.setPrefHeight(40);
+        searchWrap.setMaxWidth(360);
+        String searchBase = "-fx-background-color: white;" +
+                "-fx-border-color: " + C_BORDER + ";" +
+                "-fx-border-radius: 10;" +
+                "-fx-background-radius: 10;" +
+                "-fx-border-width: 1.5;";
+        String searchFocus = "-fx-background-color: white;" +
+                "-fx-border-color: " + C_ACCENT + ";" +
+                "-fx-border-radius: 10;" +
+                "-fx-background-radius: 10;" +
+                "-fx-border-width: 1.5;";
+        searchWrap.setStyle(searchBase);
+        txtSearch.focusedProperty()
+                .addListener((obs, o, focused) -> searchWrap.setStyle(focused ? searchFocus : searchBase));
+
+        cboSearchType = new ComboBox<>();
+        cboSearchType.getItems().addAll("Theo mã khách hàng", "Theo số điện thoại");
+        cboSearchType.setValue("Theo mã khách hàng");
+        cboSearchType.setPrefHeight(40);
+        cboSearchType.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-border-color: " + C_BORDER + ";" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-width: 1.5;" +
+                        "-fx-font-size: 13;");
+        cboSearchType.setOnAction(e -> filterData());
+
+        cboTrangThai = new ComboBox<>();
+        cboTrangThai.getItems().addAll("Tất cả", KhachHang.TRANG_THAI_DANG_HOAT_DONG, KhachHang.TRANG_THAI_VO_HIEU_HOA);
+        cboTrangThai.setValue(KhachHang.TRANG_THAI_DANG_HOAT_DONG);
+        cboTrangThai.setPrefHeight(40);
+        cboTrangThai.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-border-color: " + C_BORDER + ";" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-width: 1.5;" +
+                        "-fx-font-size: 13;");
+        cboTrangThai.setOnAction(e -> filterData());
+
+        HBox toolbar = new HBox(10, searchWrap, cboSearchType, cboTrangThai);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setPadding(new Insets(0, 28, 16, 28));
+        return toolbar;
     }
 
-    private void handleXoa() {
-        KhachHang selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Thông báo", "Vui lòng chọn khách hàng cần xóa!");
-            return;
-        }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Xóa khách hàng '" + selected.getTenKhachHang() + "'?\nHành động này không thể hoàn tác.",
-                ButtonType.YES, ButtonType.NO);
-        confirm.setTitle("Xác nhận xóa");
-        confirm.setHeaderText(null);
-        confirm.showAndWait().ifPresent(t -> {
-            if (t == ButtonType.YES) {
-                boolean ok = dao.delete(selected.getMaKhachHang());
-                if (ok) {
-                    showAlert("Thành công", "Đã xóa khách hàng.");
-                    loadData();
-                    clearForm();
+    // ═════════════════════════════════════════════════════════════════
+    // TABLE CARD
+    // ═════════════════════════════════════════════════════════════════
+
+    private VBox buildTableCard() {
+        configureTable();
+        tableView.getStylesheets().add(TABLE_CSS);
+        tableView.getStyleClass().add("customer-table");
+        VBox.setVgrow(tableView, Priority.ALWAYS);
+
+        VBox card = new VBox(tableView);
+        card.setPadding(new Insets(0, 28, 28, 28));
+        VBox.setVgrow(card, Priority.ALWAYS);
+
+        DropShadow shadow = new DropShadow(8, Color.rgb(0, 0, 0, 0.07));
+        shadow.setOffsetY(2);
+        tableView.setEffect(shadow);
+        return card;
+    }
+
+    private void configureTable() {
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        tableView.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldSelection, newSelection) -> selectedCustomer = newSelection);
+
+        tableView.setRowFactory(tv -> {
+            TableRow<KhachHang> row = new TableRow<>();
+            row.setOnMouseEntered(e -> {
+                if (!row.isEmpty() && !row.isSelected())
+                    row.setStyle("-fx-background-color: #ecfeff;");
+            });
+            row.setOnMouseExited(e -> {
+                if (!row.isEmpty() && !row.isSelected())
+                    row.setStyle("");
+            });
+            row.selectedProperty()
+                    .addListener((obs, was, now) -> row.setStyle(now ? "-fx-background-color: #ccfbf1;" : ""));
+            row.setOnMouseClicked(evt -> {
+                if (row.isEmpty()) {
+                    return;
+                }
+                tableView.getSelectionModel().select(row.getItem());
+                tableView.getFocusModel().focus(row.getIndex());
+                if (evt.getClickCount() == 2) {
+                    openCustomerDialog(row.getItem());
+                }
+            });
+            return row;
+        });
+
+        TableColumn<KhachHang, String> colMa = col("Mã KH", 90,
+                KhachHang::getMaKhachHang);
+        TableColumn<KhachHang, String> colTen = col("Tên khách hàng", 200,
+                KhachHang::getTenKhachHang);
+        TableColumn<KhachHang, String> colGT = col("Giới tính", 80,
+                kh -> kh.isGioiTinh() ? "Nam" : "Nữ");
+        TableColumn<KhachHang, String> colSdt = col("Số điện thoại", 130,
+                KhachHang::getSoDienThoai);
+        TableColumn<KhachHang, String> colDiaChi = col("Địa chỉ", -1,
+                KhachHang::getDiaChi);
+
+        TableColumn<KhachHang, String> colTrangThai = new TableColumn<>("Trạng thái");
+        colTrangThai.setPrefWidth(130);
+        colTrangThai.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTrangThai()));
+        colTrangThai.setCellFactory(c -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
                 } else {
-                    showAlert("Lỗi", "Không thể xóa. Khách hàng có thể đang liên kết với phiếu đặt phòng.");
+                    Label badge = new Label(item);
+                    badge.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
+                    if (KhachHang.TRANG_THAI_DANG_HOAT_DONG.equals(item)) {
+                        badge.setStyle(
+                                "-fx-background-color: #ecfdf5; -fx-text-fill: #059669; -fx-padding: 4 10; -fx-background-radius: 20;");
+                    } else {
+                        badge.setStyle(
+                                "-fx-background-color: #fef2f2; -fx-text-fill: #dc2626; -fx-padding: 4 10; -fx-background-radius: 20;");
+                    }
+                    setGraphic(badge);
+                    setText(null);
+                    setAlignment(Pos.CENTER);
                 }
             }
         });
+
+        tableView.getColumns().setAll(colMa, colTen, colGT, colSdt, colDiaChi, colTrangThai);
     }
 
-    private void clearForm() {
-        txtMa.clear();
-        txtMa.setEditable(true);
-        txtMa.setStyle("-fx-background-radius: 6; -fx-border-color: #e0e0e0; -fx-border-radius: 6; -fx-padding: 0 10 0 10;");
-        txtTen.clear();
-        txtDiaChi.clear();
-        txtSdt.clear();
-        cbGioiTinh.setValue("Nam");
+    private TableColumn<KhachHang, String> col(String title, double prefW,
+            java.util.function.Function<KhachHang, String> getter) {
+        TableColumn<KhachHang, String> c = new TableColumn<>(title);
+        c.setCellValueFactory(d -> new SimpleStringProperty(getter.apply(d.getValue())));
+        if (prefW > 0)
+            c.setPrefWidth(prefW);
+        return c;
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // FILTER
+    // ═════════════════════════════════════════════════════════════════
+
+    private void filterData() {
+        String kw = txtSearch != null ? txtSearch.getText().trim() : "";
+        String type = cboSearchType.getValue();
+        String statusFilter = cboTrangThai != null ? cboTrangThai.getValue() : KhachHang.TRANG_THAI_DANG_HOAT_DONG;
+
+        List<KhachHang> filtered = allData.stream().filter(kh -> {
+            boolean matchStatus = "Tất cả".equals(statusFilter)
+                    || (KhachHang.TRANG_THAI_DANG_HOAT_DONG.equals(statusFilter) && kh.isDangHoatDong())
+                    || (KhachHang.TRANG_THAI_VO_HIEU_HOA.equals(statusFilter) && !kh.isDangHoatDong());
+            if (!matchStatus)
+                return false;
+
+            if (kw.isBlank())
+                return true;
+            if ("Theo số điện thoại".equals(type)) {
+                return safe(kh.getSoDienThoai()).toLowerCase().contains(kw.toLowerCase());
+            } else {
+                return safe(kh.getMaKhachHang()).toLowerCase().contains(kw.toLowerCase()) ||
+                        safe(kh.getTenKhachHang()).toLowerCase().contains(kw.toLowerCase());
+            }
+        }).toList();
+
+        tableView.getItems().setAll(filtered);
+        restoreSelection();
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // HELPERS
+    // ═════════════════════════════════════════════════════════════════
+
+    private void openCustomerDialog(KhachHang customer) {
+        new CustomerDialog(ownerWindow(), customer, service, this::loadData).show();
+    }
+
+    private void handleExportReport() {
+        List<KhachHang> rows = tableView.getItems().stream()
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (rows.isEmpty()) {
+            showMessage(Alert.AlertType.WARNING, "Xuất báo cáo", "Không có dữ liệu để xuất báo cáo.");
+            return;
+        }
+
+        SaveTarget target = ReportExportUtils.chooseReportSaveTarget(
+                ownerWindow(),
+                "Xuất báo cáo khách hàng",
+                ReportExportUtils.defaultFileName("BaoCao_KhachHang"));
+        if (target == null) {
+            return;
+        }
+
+        try {
+            if (target.format() == ReportExportUtils.ReportFormat.PDF) {
+                ReportExportUtils.exportCustomersPdf(target.file(), rows);
+            } else {
+                ReportExportUtils.exportCustomersExcel(target.file(), rows);
+            }
+            showMessage(Alert.AlertType.INFORMATION, "Xuất báo cáo", "Xuất báo cáo thành công.");
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Không thể xuất báo cáo khách hàng", ex);
+            showMessage(Alert.AlertType.ERROR, "Lỗi xuất báo cáo", "Không thể xuất báo cáo: " + ex.getMessage());
+        }
+    }
+
+    private Window ownerWindow() {
+        return tableView.getScene() != null ? tableView.getScene().getWindow() : null;
+    }
+
+    private void showMessage(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        Window owner = ownerWindow();
+        if (owner != null) {
+            alert.initOwner(owner);
+        }
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
+
+    private void restoreSelection() {
+        if (selectedCustomer == null) {
+            tableView.getSelectionModel().clearSelection();
+            return;
+        }
+
+        for (KhachHang customer : tableView.getItems()) {
+            if (selectedCustomer.equals(customer)) {
+                tableView.getSelectionModel().select(customer);
+                tableView.scrollTo(customer);
+                return;
+            }
+        }
+
+        selectedCustomer = null;
         tableView.getSelectionModel().clearSelection();
     }
 
-    private void showAlert(String title, String msg) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle(title);
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
+    private Button buildFilledBtn(String text, String bg) {
+        Button btn = new Button(text);
+        btn.setFont(Font.font("Segoe UI", FontWeight.SEMI_BOLD, 13));
+        btn.setPrefHeight(38);
+        btn.setPadding(new Insets(0, 18, 0, 18));
+        String base = "-fx-background-color:" + bg + ";-fx-text-fill:white;-fx-background-radius:10;-fx-cursor:hand;"
+                + "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.12),6,0,0,2);";
+        String hover = "-fx-background-color:derive(" + bg
+                + ",-12%);-fx-text-fill:white;-fx-background-radius:10;-fx-cursor:hand;"
+                + "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.18),10,0,0,3);";
+        btn.setStyle(base);
+        btn.setOnMouseEntered(e -> btn.setStyle(hover));
+        btn.setOnMouseExited(e -> btn.setStyle(base));
+        return btn;
+    }
+
+    // ─── Table CSS via data URI ──────────────────────────────────────
+    private static String buildTableCss() {
+        String css = ".customer-table{" +
+                "-fx-background-color:white;" +
+                "-fx-border-color:#e2e8f0;" +
+                "-fx-border-radius:12;" +
+                "-fx-background-radius:12;" +
+                "}" +
+                ".customer-table .column-header-background{" +
+                "-fx-background-color:#f8fafc;" +
+                "-fx-background-radius:12 12 0 0;" +
+                "}" +
+                ".customer-table .column-header{" +
+                "-fx-background-color:transparent;" +
+                "-fx-border-color:transparent transparent #e2e8f0 transparent;" +
+                "-fx-size:46;" +
+                "}" +
+                ".customer-table .column-header .label{" +
+                "-fx-text-fill:#475569;" +
+                "-fx-font-weight:bold;" +
+                "-fx-font-size:12px;" +
+                "-fx-padding:0 14 0 14;" +
+                "}" +
+                ".customer-table .table-cell{" +
+                "-fx-padding:11 14 11 14;" +
+                "-fx-border-color:transparent transparent #f1f5f9 transparent;" +
+                "-fx-font-size:13px;" +
+                "-fx-text-fill:#334155;" +
+                "}" +
+                ".customer-table .table-row-cell{" +
+                "-fx-background-color:white;" +
+                "-fx-cell-size:46px;" +
+                "}" +
+                ".customer-table .table-row-cell:odd{" +
+                "-fx-background-color:#fafbfd;" +
+                "}" +
+                ".customer-table .table-row-cell:selected .table-cell{" +
+                "-fx-text-fill:#1e40af;" +
+                "}" +
+                ".customer-table .placeholder .label{" +
+                "-fx-text-fill:#94a3b8;" +
+                "-fx-font-size:14px;" +
+                "}";
+        try {
+            return "data:text/css," + URLEncoder.encode(css, StandardCharsets.UTF_8)
+                    .replace("+", "%20");
+        } catch (Exception ex) {
+            return "";
+        }
     }
 }

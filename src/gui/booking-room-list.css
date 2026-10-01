@@ -1,0 +1,227 @@
+.room-availability-card {
+    -fx-background-color: linear-gradient(to bottom, #ffffff 0%, #fcfdff 100%);
+    -fx-background-radius: 22;
+    -fx-border-radius: 22;
+    -fx-border-color: #e5edf8;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 24, 0.2, 0, 8);
+}
+
+.room-header {
+    -fx-background-color: linear-gradient(to right, #ffffff 0%, #f7fbff 100%);
+    -fx-background-radius: 22 22 0 0;
+    -fx-border-color: transparent transparent #edf2f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.room-header-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f172a;
+}
+
+.room-header-subtitle {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12.5px;
+    -fx-text-fill: #64748b;
+}
+
+.room-count-badge {
+    -fx-background-color: #e8f7ef;
+    -fx-background-radius: 999;
+    -fx-padding: 8 14 8 14;
+    -fx-text-fill: #15803d;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-border-color: #bbf7d0;
+    -fx-border-radius: 999;
+}
+
+.room-filter-wrap {
+    -fx-background-color: #fbfdff;
+    -fx-border-color: transparent transparent #edf2f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.room-filter-bar {
+    -fx-spacing: 10;
+}
+
+.room-filter-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #64748b;
+}
+
+.room-filter-input,
+.room-filter-combo,
+.room-filter-clear {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.room-filter-input,
+.room-filter-combo {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dbe6f3;
+    -fx-border-width: 1;
+}
+
+.room-filter-input:focused,
+.room-filter-combo:focused {
+    -fx-border-color: #0d9488;
+    -fx-effect: dropshadow(gaussian, rgba(13, 148, 136, 0.16), 10, 0.2, 0, 2);
+}
+
+.room-filter-clear {
+    -fx-background-color: #f8fafc;
+}
+
+.room-filter-combo .list-cell {
+    -fx-text-fill: #334155;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dbe6f3;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #334155;
+    -fx-padding: 8 12 8 12;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #f0fdfa;
+    -fx-text-fill: #0f766e;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #ccfbf1;
+    -fx-text-fill: #115e59;
+}
+
+.room-table-stack {
+    -fx-padding: 18 20 20 20;
+    -fx-background-color: transparent;
+}
+
+.phong-trong-table {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 18;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 18;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 4;
+}
+
+.phong-trong-table .virtual-flow,
+.phong-trong-table .corner,
+.phong-trong-table .filler {
+    -fx-background-color: transparent;
+}
+
+.phong-trong-table .column-header-background {
+    -fx-background-color: #f8fbff;
+    -fx-background-radius: 14 14 0 0;
+}
+
+.phong-trong-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e8eef6 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-size: 46;
+}
+
+.phong-trong-table .column-header .label {
+    -fx-text-fill: #334155;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 14 0 14;
+}
+
+.phong-trong-table .table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-cell-size: 48px;
+    -fx-background-insets: 0, 0 8 0 8;
+    -fx-padding: 0 8 0 8;
+}
+
+.phong-trong-table .table-row-cell:odd {
+    -fx-background-color: #f8fbff;
+}
+
+.phong-trong-table .table-row-cell:hover {
+    -fx-background-color: #eef6ff;
+    -fx-cursor: hand;
+}
+
+.phong-trong-table .table-row-cell:room-picked {
+    -fx-background-color: #ccfbf1;
+}
+
+.phong-trong-table .table-row-cell:room-picked .table-cell {
+    -fx-text-fill: #0f766e;
+    -fx-font-weight: 700;
+}
+
+.phong-trong-table .table-cell {
+    -fx-border-color: transparent transparent #edf2f7 transparent;
+    -fx-padding: 0 14 0 14;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+    -fx-alignment: CENTER-LEFT;
+}
+
+.phong-trong-table .placeholder .label {
+    -fx-text-fill: transparent;
+}
+
+.room-empty-state {
+    -fx-max-width: 320;
+    -fx-alignment: center;
+    -fx-spacing: 14;
+    -fx-padding: 24;
+}
+
+.room-empty-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #475569;
+}
+
+.room-empty-subtitle {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-fill: #94a3b8;
+}
+
+.room-loading-overlay {
+    -fx-background-color: rgba(248, 250, 252, 0.72);
+    -fx-background-radius: 18;
+}
+
+.room-loading-content {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+    -fx-background-radius: 18;
+    -fx-padding: 22 28 22 28;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 16, 0.18, 0, 5);
+}
+
+.room-loading-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 600;
+}

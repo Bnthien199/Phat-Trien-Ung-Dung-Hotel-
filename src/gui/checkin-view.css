@@ -1,0 +1,256 @@
+.checkin-view {
+    -fx-background-color: #f4f7fb;
+}
+
+.checkin-title {
+    -fx-font-size: 27px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+}
+
+.checkin-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
+
+.checkin-hero-icon {
+    -fx-min-width: 54;
+    -fx-min-height: 54;
+    -fx-max-width: 54;
+    -fx-max-height: 54;
+    -fx-alignment: center;
+    -fx-background-color: linear-gradient(to bottom right, #0d9488, #1f3a5f);
+    -fx-background-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(13,148,136,0.22), 16, 0, 0, 4);
+}
+
+.checkin-hero-icon .label {
+    -fx-text-fill: white;
+}
+
+.checkin-stat-card {
+    -fx-padding: 12 16;
+    -fx-min-width: 168;
+}
+
+.checkin-stat-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+}
+
+.checkin-guide-icon {
+    -fx-font-size: 18px;
+    -fx-text-fill: #1d4ed8;
+}
+
+.checkin-guide-text {
+    -fx-text-fill: #1e40af;
+    -fx-font-size: 12.5px;
+}
+
+.checkin-search-box {
+    -fx-background-color: white;
+    -fx-border-color: #d9e2ec;
+    -fx-border-width: 1.4;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4 16 4 16;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.04), 10, 0, 0, 2);
+}
+
+.checkin-search-box-focused {
+    -fx-border-color: #0d9488;
+    -fx-effect: dropshadow(gaussian, rgba(13,148,136,0.10), 12, 0, 0, 2);
+}
+
+.checkin-search-icon {
+    -fx-font-size: 16px;
+    -fx-text-fill: #64748b;
+}
+
+.checkin-search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 9 0 9 0;
+}
+
+.checkin-search-field:focused {
+    -fx-border-color: transparent;
+    -fx-effect: none;
+}
+
+.checkin-refresh-button {
+    -fx-background-radius: 12;
+    -fx-padding: 9 18;
+}
+
+.checkin-card {
+    -fx-padding: 18;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 18, 0, 0, 4);
+}
+
+.checkin-section-icon {
+    -fx-font-size: 15px;
+    -fx-text-fill: #0d9488;
+}
+
+.checkin-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+}
+
+.checkin-table {
+    -fx-fixed-cell-size: 48;
+}
+
+.checkin-table .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #f0fdfa, #ecfeff);
+}
+
+.checkin-table .column-header {
+    -fx-size: 48;
+}
+
+.checkin-table .column-header .label {
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 12.5px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-max-width: infinity;
+}
+
+.checkin-table .table-row-cell {
+    -fx-background-color: white;
+}
+
+.checkin-table .table-row-cell:odd {
+    -fx-background-color: #f8fafc;
+}
+
+.checkin-table .table-row-cell:hover {
+    -fx-background-color: #f0fdfa;
+}
+
+.checkin-table .table-cell {
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+    -fx-alignment: center;
+}
+
+.checkin-status-badge {
+    -fx-padding: 5 12;
+    -fx-background-radius: 999;
+}
+
+.checkin-badge-icon {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+.checkin-confirm-button {
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-padding: 6 12;
+}
+
+.checkin-confirm-button:disabled {
+    -fx-background-color: #cbd5e1;
+    -fx-text-fill: #64748b;
+    -fx-effect: none;
+}
+
+.checkin-room-dialog-content {
+    -fx-background-color: #f8fafc;
+}
+
+.checkin-room-dialog-description {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
+
+.checkin-room-choice-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.checkin-room-choice-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #dbeafe;
+    -fx-border-radius: 14;
+    -fx-padding: 14 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 10, 0, 0, 2);
+}
+
+.checkin-room-choice-card:hover {
+    -fx-background-color: #f8fcff;
+    -fx-border-color: #38bdf8;
+}
+
+.checkin-room-choice-card-selected {
+    -fx-background-color: #ecfdf5;
+    -fx-border-color: #0d9488;
+}
+
+.checkin-room-choice-code {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+}
+
+.checkin-room-choice-meta {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: #475569;
+}
+
+.checkin-room-choice-status {
+    -fx-font-size: 11.5px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+    -fx-background-color: #ccfbf1;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10;
+    -fx-max-width: 150;
+}
+
+.checkin-room-choice-checkbox {
+    -fx-padding: 4;
+}
+
+.checkin-room-confirm-button {
+    -fx-background-radius: 12;
+    -fx-font-weight: 800;
+    -fx-padding: 8 16;
+}
+
+.checkin-empty-circle {
+    -fx-fill: #ccfbf1;
+}
+
+.checkin-empty-icon {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f766e;
+}
+
+.checkin-empty-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f172a;
+}
+
+.checkin-empty-subtitle {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: #64748b;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}

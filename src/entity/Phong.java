@@ -5,62 +5,128 @@ import java.util.Objects;
 public class Phong {
     private String maPhong;
     private String loaiPhong;
-    private int soGiuong;
+    private String maLoai;
+    private int soNguoi;
+    private int tang;
     private String trangThai;
     private double giaPhong;
 
-    public Phong() {}
+    public Phong() {
+    }
 
     public Phong(String maPhong) {
         this.maPhong = maPhong;
     }
 
-    public Phong(String maPhong, String loaiPhong, int soGiuong, String trangThai, double giaPhong) {
+    public Phong(String maPhong, String loaiPhong, int soNguoi, String trangThai, double giaPhong) {
+        this(maPhong, loaiPhong, soNguoi, 1, trangThai, giaPhong);
+    }
+
+    public Phong(String maPhong, String loaiPhong, int soNguoi, int tang, String trangThai, double giaPhong) {
         this.maPhong = maPhong;
         this.loaiPhong = loaiPhong;
-        this.soGiuong = soGiuong;
+        this.soNguoi = soNguoi;
+        this.tang = tang;
         this.trangThai = trangThai;
         this.giaPhong = giaPhong;
     }
 
-    public String getMaPhong() { return maPhong; }
-    public void setMaPhong(String maPhong) { 
-        if (!maPhong.matches("^P\\d{3,}$")) {
-            throw new IllegalArgumentException("Mã phòng phải bắt đầu bằng P và theo sau là ít nhất 3 chữ số");
-        }
-        this.maPhong = maPhong; 
+    public String getMaPhong() {
+        return maPhong;
     }
 
-    public String getLoaiPhong() { return loaiPhong; }
-    public void setLoaiPhong(String loaiPhong) { 
+    public void setMaPhong(String maPhong) {
+        if (maPhong == null || !maPhong.matches("^P\\d{3,}$")) {
+            throw new IllegalArgumentException("Mã phòng phải bắt đầu bằng P và theo sau là ít nhất 3 chữ số");
+        }
+        this.maPhong = maPhong;
+    }
+
+    public String getLoaiPhong() {
+        return loaiPhong;
+    }
+
+    public String getMaLoai() {
+        return maLoai;
+    }
+
+    public String getMaLoaiPhong() {
+        return maLoai;
+    }
+
+    public void setLoaiPhong(String loaiPhong) {
         if (loaiPhong == null || loaiPhong.trim().isEmpty()) {
             throw new IllegalArgumentException("Loại phòng không được rỗng");
         }
-        this.loaiPhong = loaiPhong; 
+        this.loaiPhong = loaiPhong.trim();
     }
 
-    public int getSoGiuong() { return soGiuong; }
-    public void setSoGiuong(int soGiuong) { 
-        if (soGiuong <= 0) {
-            throw new IllegalArgumentException("Số giường phải > 0");
+    public void setMaLoaiPhong(String maLoaiPhong) {
+        if (maLoaiPhong == null || maLoaiPhong.trim().isEmpty()) {
+            this.maLoai = null;
+            return;
         }
-        this.soGiuong = soGiuong; 
+        this.maLoai = maLoaiPhong.trim();
     }
 
-    public String getTrangThai() { return trangThai; }
-    public void setTrangThai(String trangThai) { 
+    public int getSoNguoi() {
+        return soNguoi;
+    }
+
+    public void setSoNguoi(int soNguoi) {
+        if (soNguoi <= 0) {
+            throw new IllegalArgumentException("Số người phải > 0");
+        }
+        this.soNguoi = soNguoi;
+    }
+
+    public int getTang() {
+        return tang;
+    }
+
+    public void setTang(int tang) {
+        if (tang < 0 || tang > 200) {
+            throw new IllegalArgumentException("Tầng không hợp lệ");
+        }
+        this.tang = tang;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
         if (trangThai == null || trangThai.trim().isEmpty()) {
             throw new IllegalArgumentException("Trạng thái không được rỗng");
         }
-        this.trangThai = trangThai; 
+        this.trangThai = trangThai.trim();
     }
 
-    public double getGiaPhong() { return giaPhong; }
-    public void setGiaPhong(double giaPhong) { 
+    public double getGiaPhong() {
+        return giaPhong;
+    }
+
+    public void setGiaPhong(double giaPhong) {
         if (giaPhong < 0) {
             throw new IllegalArgumentException("Giá phòng phải >= 0");
         }
-        this.giaPhong = giaPhong; 
+        this.giaPhong = giaPhong;
+    }
+
+    public int getSoGiuong() {
+        return getSoNguoi();
+    }
+
+    public void setSoGiuong(int soGiuong) {
+        setSoNguoi(soGiuong);
+    }
+
+    public int getSucChua() {
+        return getSoNguoi();
+    }
+
+    public void setSucChua(int sucChua) {
+        setSoNguoi(sucChua);
     }
 
     @Override
@@ -78,6 +144,6 @@ public class Phong {
 
     @Override
     public String toString() {
-        return "Phong [maPhong=" + maPhong + ", loaiPhong=" + loaiPhong + ", trangThai=" + trangThai + "]";
+        return "Phong [maPhong=" + maPhong + ", loaiPhong=" + loaiPhong + ", tang=" + tang + ", trangThai=" + trangThai + "]";
     }
 }

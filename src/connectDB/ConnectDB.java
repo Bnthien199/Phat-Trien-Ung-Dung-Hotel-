@@ -1,6 +1,5 @@
 package connectDB;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -8,101 +7,72 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-/**
- * Quản lý kết nối CSDL SQL Server.
- *
- * Cấu hình được đọc từ file "db.properties" ở thư mục gốc dự án.
- * Nếu không tìm thấy file, sẽ dùng giá trị mặc định.
- *
- * ============================================================
- *  HƯỚNG DẪN THIẾT LẬP CHO TỪNG THÀNH VIÊN NHÓM:
- *  1. Mở file "db.properties" ở thư mục gốc dự án
- *  2. Sửa db.password thành mật khẩu SQL Server trên máy bạn
- *  3. Lưu lại và chạy chương trình
- * ============================================================
- */
 public class ConnectDB {
 
-    public static Connection con = null;
-    private static ConnectDB instance = new ConnectDB();
+    private static final Properties DB_PROPERTIES = loadProperties();
+    private static final String DEFAULT_URL =
+            "jdbc:sqlserver://localhost:1433;databaseName=QuanLyKhachSan;encrypt=true;trustServerCertificate=true;";
+    private static final String URL = DB_PROPERTIES.getProperty("db.url", DEFAULT_URL);
+    private static final String USER =
+            DB_PROPERTIES.getProperty("db.user", "sy");
+    private static final String PASSWORD =
+            DB_PROPERTIES.getProperty("db.password", "123");
 
-    // Giá trị mặc định (fallback nếu không đọc được file)
-    private static String DB_URL      = "jdbc:sqlserver://localhost:1433;databaseName=QuanLyKhachSan_N06_v5;encrypt=true;trustServerCertificate=true";
-    private static String DB_USER     = "sa";
-    private static String DB_PASSWORD = "123456";
-
-    static {
-        loadConfig();
-    }
-
-    /**
-     * Đọc cấu hình từ file db.properties.
-     * File db.properties nằm ở thư mục gốc của project (cùng cấp với src/).
-     */
-    private static void loadConfig() {
-        Properties props = new Properties();
-
-        // Thử load từ thư mục làm việc hiện tại (khi chạy từ IDE)
-        try (InputStream input = new FileInputStream("db.properties")) {
-            props.load(input);
-            applyProps(props);
-            System.out.println("[DB Config] Đã đọc cấu hình từ db.properties");
-            return;
-        } catch (IOException ignored) {
-            // Thử tiếp từ classpath
-        }
-
-        // Thử load từ classpath (khi đóng gói thành jar)
-        try (InputStream input = ConnectDB.class.getClassLoader().getResourceAsStream("db.properties")) {
-            if (input != null) {
-                props.load(input);
-                applyProps(props);
-                System.out.println("[DB Config] Đã đọc cấu hình từ classpath/db.properties");
-                return;
-            }
-        } catch (IOException ignored) {
-            // Bỏ qua
-        }
-
-        System.out.println("[DB Config] Không tìm thấy db.properties. Dùng cấu hình mặc định.");
-        System.out.println("[DB Config] URL=" + DB_URL + " | USER=" + DB_USER);
-    }
-
-    private static void applyProps(Properties props) {
-        if (props.containsKey("db.url"))      DB_URL      = props.getProperty("db.url").trim();
-        if (props.containsKey("db.user"))     DB_USER     = props.getProperty("db.user").trim();
-        if (props.containsKey("db.password")) DB_PASSWORD = props.getProperty("db.password").trim();
-    }
+    private static final ConnectDB INSTANCE = new ConnectDB();
 
     public static ConnectDB getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     public void connect() throws SQLException {
-        con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-        System.out.println("[DB] Kết nối thành công tới: " + DB_URL);
+        loadDriver();
+        DriverManager.setLoginTimeout(5);
+
+        try (Connection ignored = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            System.out.println("Connected to database successfully.");
+        } catch (SQLException e) {
+            System.err.println("Database connection error: " + e.getMessage());
+            throw new SQLException("Khong the ket noi database. Kiem tra SQL Server, tai khoan va cau hinh ket noi.", e);
+        }
     }
 
     public void disconnect() {
-        if (con != null) {
-            try {
-                con.close();
-                con = null;
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+        // Each DAO call manages its own Connection via try-with-resources.
+    }
+
+    public static Connection getConnection() {
+        try {
+            loadDriver();
+            DriverManager.setLoginTimeout(5);
+            return DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (SQLException e) {
+            throw new RuntimeException("Khong the tao ket noi database.", e);
         }
     }
 
-    public static synchronized Connection getConnection() {
+    public static void main(String[] args) throws SQLException {
+        getInstance().connect();
+    }
+
+    private static void loadDriver() throws SQLException {
         try {
-            if (con == null || con.isClosed()) {
-                instance.connect();
-            }
-        } catch (SQLException e) {
-            System.err.println("[DB ERROR] Không thể kết nối CSDL: " + e.getMessage());
-            e.printStackTrace();
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Khong tim thay JDBC Driver SQL Server.", e);
         }
-        return con;
+    }
+
+    private static Properties loadProperties() {
+        Properties properties = new Properties();
+
+        try (InputStream input = ConnectDB.class.getClassLoader().getResourceAsStream("db.properties")) {
+            if (input != null) {
+                properties.load(input);
+            }
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError("Khong the doc file db.properties: " + e.getMessage());
+        }
+
+        return properties;
     }
 }

@@ -1,0 +1,5 @@
+# Local SQL Server config for Hotel Management app
+# Copy values into db.properties if your machine uses different credentials.
+db.url=jdbc:sqlserver://localhost:1433;databaseName=QuanLyKhachSan_N06_v5;encrypt=false
+db.user=hotel_app_dev
+db.password=HotelApp123!

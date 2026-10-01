@@ -1,63 +1,76 @@
 package gui;
 
-import javax.swing.*;
+import dao.HoaDonDAO;
+import dao.PhieuDatPhongDAO;
+import dao.PhongDAO;
+import entity.HoaDon;
+import entity.PhieuDatPhong;
+import entity.Phong;
+import util.StatusUtils;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.RenderingHints;
+import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import dao.PhongDAO;
-import dao.HoaDonDAO;
-import dao.PhieuDatPhongDAO;
-import entity.Phong;
-import entity.HoaDon;
-import entity.PhieuDatPhong;
 
 public class DashboardPanel extends JPanel {
 
-    private final Color COLOR_TOTAL = new Color(52, 152, 219);  // Blue
-    private final Color COLOR_OCCUPIED = new Color(231, 76, 60); // Red
-    private final Color COLOR_VACANT = new Color(46, 204, 113);   // Green
-    private final Color COLOR_REVENUE = new Color(155, 89, 182); // Purple
+    private final Color colorTotal = new Color(52, 152, 219);
+    private final Color colorOccupied = new Color(231, 76, 60);
+    private final Color colorVacant = new Color(46, 204, 113);
+    private final Color colorRevenue = new Color(155, 89, 182);
 
-    private PhongDAO phongDAO = new PhongDAO();
-    private HoaDonDAO hoaDonDAO = new HoaDonDAO();
-    private PhieuDatPhongDAO phieuDatPhongDAO = new PhieuDatPhongDAO();
-    private DecimalFormat df = new DecimalFormat("#,### VNĐ");
+    private final PhongDAO phongDAO = new PhongDAO();
+    private final HoaDonDAO hoaDonDAO = new HoaDonDAO();
+    private final PhieuDatPhongDAO phieuDatPhongDAO = new PhieuDatPhongDAO();
+    private final BookingDetailController bookingDetailController = new BookingDetailController();
+    private final DecimalFormat df = new DecimalFormat("#,### VND");
+
+    private JTable tableDanhSachDatPhong;
 
     public DashboardPanel() {
         setLayout(new BorderLayout(0, 30));
         setBackground(new Color(245, 246, 250));
         setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        // 1. Tiêu đề
-        JLabel lblTitle = new JLabel("TỔNG QUAN HỆ THỐNG");
+        JLabel lblTitle = new JLabel("TONG QUAN HE THONG");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(new Color(44, 62, 80));
         add(lblTitle, BorderLayout.NORTH);
 
-        // 2. Panel chính chứa 2 phần: Thẻ thống kê (Trên) và Danh sách (Dưới)
         JPanel pnlMain = new JPanel(new BorderLayout(0, 30));
         pnlMain.setOpaque(false);
 
-        // --- Phần trên: Thẻ thống kê ---
         JPanel pnlCards = new JPanel(new GridLayout(1, 4, 25, 0));
         pnlCards.setOpaque(false);
         loadStatistics(pnlCards);
         pnlMain.add(pnlCards, BorderLayout.NORTH);
 
-        // --- Phần dưới: 2 Bảng danh sách ---
         JPanel pnlLists = new JPanel(new GridLayout(1, 2, 25, 0));
         pnlLists.setOpaque(false);
-
-        pnlLists.add(createTablePanel("PHÒNG VỪA ĐẶT (GẦN ĐÂY)", createRecentBookingTable()));
-        pnlLists.add(createTablePanel("DANH SÁCH PHÒNG ĐANG TRỐNG", createVacantRoomTable()));
-
+        pnlLists.add(createTablePanel("PHONG VUA DAT (GAN DAY)", createRecentBookingTable()));
+        pnlLists.add(createTablePanel("DANH SACH PHONG DANG TRONG", createVacantRoomTable()));
         pnlMain.add(pnlLists, BorderLayout.CENTER);
 
         add(pnlMain, BorderLayout.CENTER);
@@ -67,8 +80,12 @@ public class DashboardPanel extends JPanel {
         try {
             List<Phong> dsPhong = phongDAO.getAllPhong();
             int total = dsPhong.size();
-            long occupied = dsPhong.stream().filter(p -> p.getTrangThai() != null && p.getTrangThai().equals("Đang ở")).count();
-            long vacant = dsPhong.stream().filter(p -> p.getTrangThai() != null && p.getTrangThai().equals("Trống")).count();
+            long occupied = dsPhong.stream()
+                    .filter(p -> p.getTrangThai() != null && p.getTrangThai().equalsIgnoreCase("DANG_O"))
+                    .count();
+            long vacant = dsPhong.stream()
+                    .filter(p -> p.getTrangThai() != null && p.getTrangThai().equalsIgnoreCase("TRONG"))
+                    .count();
 
             List<HoaDon> dsHoaDon = hoaDonDAO.getAllHoaDon();
             double todayRevenue = dsHoaDon.stream()
@@ -76,19 +93,19 @@ public class DashboardPanel extends JPanel {
                     .mapToDouble(hd -> hd.getTongTienPhong() + hd.getTongTienDichVu())
                     .sum();
 
-            container.add(new StatCard("TỔNG SỐ PHÒNG", String.valueOf(total), "Phòng khách sạn", COLOR_TOTAL));
-            container.add(new StatCard("ĐANG CÓ KHÁCH", String.valueOf(occupied), "Phòng đang ở", COLOR_OCCUPIED));
-            container.add(new StatCard("PHÒNG TRỐNG", String.valueOf(vacant), "Sẵn sàng đón khách", COLOR_VACANT));
-            container.add(new StatCard("DOANH THU HÔM NAY", df.format(todayRevenue), "Tổng tiền thu về", COLOR_REVENUE));
+            container.add(new StatCard("TONG SO PHONG", String.valueOf(total), "Phong khach san", colorTotal));
+            container.add(new StatCard("DANG CO KHACH", String.valueOf(occupied), "Phong dang o", colorOccupied));
+            container.add(new StatCard("PHONG TRONG", String.valueOf(vacant), "San sang don khach", colorVacant));
+            container.add(new StatCard("DOANH THU HOM NAY", df.format(todayRevenue), "Tong tien thu ve", colorRevenue));
         } catch (Exception e) {
-            container.add(new StatCard("LỖI DỮ LIỆU", "0", "Vui lòng kiểm tra kết nối", Color.GRAY));
+            container.add(new StatCard("LOI DU LIEU", "0", "Vui long kiem tra ket noi", Color.GRAY));
         }
     }
 
     private JPanel createTablePanel(String title, JTable table) {
         JPanel pnl = new JPanel(new BorderLayout(0, 10));
         pnl.setOpaque(false);
-        
+
         JLabel lbl = new JLabel(title);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lbl.setForeground(new Color(52, 73, 94));
@@ -103,43 +120,56 @@ public class DashboardPanel extends JPanel {
     }
 
     private JTable createRecentBookingTable() {
-        String[] columns = {"Mã Phiếu", "Khách Hàng", "Ngày Đặt", "Trạng Thái"};
+        String[] columns = {"Ma Phieu", "Khach Hang", "Ngay Dat", "Trang Thai"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
-        
+
         try {
             List<PhieuDatPhong> ds = phieuDatPhongDAO.getAllPhieuDatPhong();
-            // Lấy 10 phiếu mới nhất
             ds.stream()
-              .sorted((p1, p2) -> p2.getNgayDat().compareTo(p1.getNgayDat()))
-              .limit(10)
-              .forEach(p -> {
-                  model.addRow(new Object[]{
-                      p.getMaDatPhong(),
-                      p.getKhachHang().getMaKhachHang(),
-                      p.getNgayDat().toLocalDate(),
-                      p.getTrangThai()
-                  });
-              });
-        } catch (Exception e) {}
+                    .sorted((p1, p2) -> p2.getNgayDat().compareTo(p1.getNgayDat()))
+                    .limit(10)
+                    .forEach(p -> model.addRow(new Object[]{
+                            p.getMaDatPhong(),
+                            p.getKhachHang() != null ? p.getKhachHang().getMaKhachHang() : "",
+                            p.getNgayDat() != null ? p.getNgayDat().toLocalDate() : "",
+                            StatusUtils.bookingLabel(p.getTrangThai())
+                    }));
+        } catch (Exception ignored) {
+        }
 
-        return setupModernTable(model);
+        tableDanhSachDatPhong = setupModernTable(model);
+        tableDanhSachDatPhong.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    int selectedRow = tableDanhSachDatPhong.rowAtPoint(e.getPoint());
+                    if (selectedRow < 0) {
+                        return;
+                    }
+                    String bookingId = String.valueOf(tableDanhSachDatPhong.getValueAt(selectedRow, 0));
+                    Window parentWindow = SwingUtilities.getWindowAncestor(DashboardPanel.this);
+                    JFrame parentFrame = parentWindow instanceof JFrame ? (JFrame) parentWindow : null;
+                    bookingDetailController.openBookingDetail(parentFrame, bookingId);
+                }
+            }
+        });
+        return tableDanhSachDatPhong;
     }
 
     private JTable createVacantRoomTable() {
-        String[] columns = {"Mã Phòng", "Loại Phòng", "Số Giường", "Giá Phòng"};
+        String[] columns = {"Ma Phong", "Loai Phong", "So Nguoi", "Gia Phong"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
 
         try {
-            List<Phong> ds = phongDAO.filterPhong("Trống", null);
-            ds.forEach(p -> {
-                model.addRow(new Object[]{
+            List<Phong> ds = phongDAO.filterPhong("TRONG", null);
+            ds.forEach(p -> model.addRow(new Object[]{
                     p.getMaPhong(),
                     p.getLoaiPhong(),
-                    p.getSoGiuong(),
+                    p.getSoNguoi(),
                     df.format(p.getGiaPhong())
-                });
-            });
-        } catch (Exception e) {}
+            }));
+        } catch (Exception ignored) {
+        }
 
         return setupModernTable(model);
     }
@@ -160,15 +190,17 @@ public class DashboardPanel extends JPanel {
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
-        
+
         return table;
     }
 
-    private class StatCard extends JPanel {
-        private String title, value, subtitle;
-        private Color color;
+    private static class StatCard extends JPanel {
+        private final String title;
+        private final String value;
+        private final String subtitle;
+        private final Color color;
 
-        public StatCard(String title, String value, String subtitle, Color color) {
+        private StatCard(String title, String value, String subtitle, Color color) {
             this.title = title;
             this.value = value;
             this.subtitle = subtitle;

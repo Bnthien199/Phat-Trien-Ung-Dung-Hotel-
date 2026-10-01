@@ -1,12 +1,53 @@
-﻿*.jar
-*.war
+# Java / Maven
+target/
 *.class
-*.exe
-*.dll
-*.zip
-*.rar
+*.jar
+*.war
+*.ear
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Build output
+bin/
+out/
+out_test/
+production/
 build/
 dist/
-target/
-node_modules/
-bin/
+
+# Local config
+db.properties
+*.local
+*.env
+
+# Logs
+*.log
+app.stdout.log
+app.stderr.log
+run.stdout.log
+run.stderr.log
+
+# Temporary/tooling
+temp/
+src/temp/
+.codex-*/
+.codex-*
+.claude/
+src/.ai/
+.__sql_check/
+
+# Local vendored dependencies copied by IDE/manual runs
+src/lib/
+libary/*.jar
+libary/javafx-sdk*/
+
+# OS
+.DS_Store
+Thumbs.db

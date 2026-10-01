@@ -1,0 +1,301 @@
+/* -------------------------------------------------------------
+   MODERN HOTEL DASHBOARD STYLE SHEET - dashboard.css
+   Redesigned for Premium Slate & Teal Aesthetic
+   ------------------------------------------------------------- */
+
+/* Root Dashboard Layout */
+.dashboard-root {
+    -fx-background-color: #f5f7fb;
+    -fx-font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Outfit', 'Inter', Roboto, sans-serif;
+}
+
+/* Page Header & Title Section */
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #020617; /* Slate 900 */
+}
+
+.page-subtitle {
+    -fx-font-size: 13.5px;
+    -fx-text-fill: #334155; /* Slate 500 */
+}
+
+.header-icon-wrapper {
+    -fx-background-color: #e0f2fe; /* Sky 100 */
+    -fx-background-radius: 16px;
+    -fx-border-color: #bae6fd; /* Sky 200 */
+    -fx-border-radius: 16px;
+    -fx-border-width: 1.5px;
+}
+
+/* Modern Card Layout */
+.dashboard-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 24px;
+    -fx-border-radius: 24px;
+    -fx-border-color: transparent;
+    -fx-padding: 24px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 18, 0.15, 0, 4);
+}
+
+.dashboard-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 22, 0.15, 0, 6);
+    -fx-translate-y: -1px;
+}
+
+/* Stat Card Specific Elements */
+.stat-card-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827; /* Slate 500 */
+    -fx-text-transform: uppercase;
+}
+
+.stat-card-value {
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #000000; /* Slate 900 */
+    -fx-padding: 8 0 4 0;
+}
+
+.stat-card-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #334155; /* Slate 400 */
+}
+
+.stat-icon-wrapper {
+    -fx-background-radius: 12px;
+    -fx-alignment: center;
+}
+
+/* Percentage Badges */
+.badge-percent {
+    -fx-background-radius: 99px;
+    -fx-padding: 5px 12px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.badge-percent-up {
+    -fx-background-color: #ecfdf5; /* Emerald 50 */
+    -fx-text-fill: #059669; /* Emerald 600 */
+}
+
+.badge-percent-down {
+    -fx-background-color: #fef2f2; /* Red 50 */
+    -fx-text-fill: #dc2626; /* Red 600 */
+}
+
+.badge-percent-neutral {
+    -fx-background-color: #f1f5f9; /* Slate 100 */
+    -fx-text-fill: #475569; /* Slate 600 */
+}
+
+/* Pill Control Buttons */
+.btn-pill {
+    -fx-background-radius: 99px;
+    -fx-border-radius: 99px;
+    -fx-border-width: 1.5px;
+    -fx-font-weight: bold;
+    -fx-font-size: 12.5px;
+    -fx-cursor: hand;
+    -fx-padding: 8px 18px;
+}
+
+.btn-pill-active {
+    -fx-background-color: #0d9488; /* Teal 600 */
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #0d9488;
+}
+
+.btn-pill-active:hover {
+    -fx-background-color: #0f766e; /* Teal 700 */
+    -fx-border-color: #0f766e;
+}
+
+.btn-pill-inactive {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #111827; /* Slate 600 */
+    -fx-border-color: #cbd5e1; /* Slate 200 */
+}
+
+.btn-pill-inactive:hover {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #94a3b8;
+}
+
+/* DatePicker Styled Box */
+.date-picker-box {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 14px;
+    -fx-border-width: 1.5px;
+    -fx-padding: 6px 12px;
+    -fx-alignment: center-left;
+}
+
+/* Custom Dashboard DatePicker with no calendar icon */
+.dashboard-date-picker {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.dashboard-date-picker .arrow-button {
+    -fx-padding: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-opacity: 0;
+}
+.dashboard-date-picker .arrow-button .arrow {
+    -fx-padding: 0;
+    -fx-shape: "";
+}
+.dashboard-date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-alignment: center;
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+    -fx-font-size: 13.5px;
+}
+
+/* Modern Styled TableView */
+.modern-table {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.modern-table .column-header-background {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 14px 14px 0px 0px;
+    -fx-border-radius: 14px 14px 0px 0px;
+}
+
+.modern-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e2e8f0 transparent;
+    -fx-size: 52px;
+    -fx-padding: 0 12px;
+}
+
+.modern-table .column-header .label {
+    -fx-text-fill: #000000; /* Bold Black */
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-alignment: center;
+}
+
+.modern-table .table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-cell-size: 54px;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+}
+
+.modern-table .table-row-cell:odd {
+    -fx-background-color: #fafbfd;
+}
+
+.modern-table .table-row-cell:hover {
+    -fx-background-color: #f1f5f9; /* Slate 100 hover row */
+}
+
+.modern-table .table-cell {
+    -fx-padding: 0 16px;
+    -fx-font-size: 13.5px;
+    -fx-text-fill: #111827; /* Slate 700 */
+}
+
+/* Beautiful Status Badges */
+.badge-status {
+    -fx-background-radius: 99px;
+    -fx-padding: 5px 14px;
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.badge-status-paid {
+    -fx-background-color: #ecfdf5; /* Emerald 50 */
+    -fx-text-fill: #059669; /* Emerald 600 */
+}
+
+.badge-status-pending {
+    -fx-background-color: #fff7ed; /* Orange 50 */
+    -fx-text-fill: #d97706; /* Orange 600 */
+}
+
+.badge-status-staying {
+    -fx-background-color: #eff6ff; /* Blue 50 */
+    -fx-text-fill: #2563eb; /* Blue 600 */
+}
+
+/* Chart Customizations */
+.chart {
+    -fx-padding: 10px;
+}
+
+.chart-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #020617;
+    -fx-alignment: center-left;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 14px;
+}
+
+.chart-legend-item {
+    -fx-text-fill: #000000;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Modern Gradient Columns (Green/Teal to Purple) with rounded tops */
+.chart-bar,
+.default-color0.chart-bar {
+    -fx-background-color: linear-gradient(to top, #0d9488, #8b5cf6);
+    -fx-background-radius: 6px 6px 0px 0px;
+    -fx-background-insets: 0;
+}
+
+.chart-bar:hover,
+.default-color0.chart-bar:hover {
+    -fx-background-color: linear-gradient(to top, #14b8a6, #a78bfa);
+    -fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.3), 8, 0, 0, 0);
+}
+
+/* Professional Soft Gridlines */
+.chart-horizontal-grid-lines {
+    -fx-stroke: #e2e8f0;
+    -fx-stroke-width: 1.2px;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: transparent;
+}
+
+.chart-axis {
+    -fx-tick-label-fill: #000000;
+    -fx-axis-label-fill: #000000;
+}
+
+.axis {
+    -fx-tick-label-fill: #000000;
+}
+
+.axis-label {
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+}
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}

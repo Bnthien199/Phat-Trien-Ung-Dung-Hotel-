@@ -1,0 +1,66 @@
+.room-stats-view,
+.customer-stats-view {
+    -fx-background-color: #f4f7fb;
+}
+
+.stats-summary-grid {
+    -fx-hgap: 16;
+    -fx-vgap: 16;
+}
+
+.stats-kpi-value-strong {
+    -fx-text-fill: #000000;
+}
+
+.stats-filter-badge {
+    -fx-background-color: rgba(31,58,95,0.08);
+    -fx-text-fill: #1f3a5f;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 7 12 7 12;
+    -fx-background-radius: 999;
+}
+
+.stats-table {
+    -fx-fixed-cell-size: 48;
+}
+
+.stats-table .table-cell {
+    -fx-font-size: 12.5px;
+}
+
+.stats-occupancy-pill {
+    -fx-background-color: #ecfdf5;
+    -fx-border-color: #a7f3d0;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 7 12 7 12;
+}
+
+.stats-occupancy-pill .label {
+    -fx-text-fill: #065f46;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.stats-chart-placeholder {
+    -fx-background-color: rgba(248,250,252,0.86);
+    -fx-background-radius: 16;
+}
+
+.stats-chart-placeholder .empty-state-icon {
+    -fx-text-fill: #cbd5e1;
+}
+
+.stats-chart-placeholder .empty-state-title {
+    -fx-text-fill: #111827;
+}
+
+.stats-search-field {
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.stats-search-field,
+.stats-filter-combo {
+    -fx-font-size: 12.5px;
+}
